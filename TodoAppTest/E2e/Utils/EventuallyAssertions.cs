@@ -1,5 +1,3 @@
-using FluentAssertions.Execution;
-
 namespace TodoAppTest.E2e.Utils;
 
 public static class EventuallyAssertions
@@ -28,14 +26,5 @@ public static class EventuallyAssertions
         }
 
         throw last ?? new TimeoutException("Eventually assertion timed out.");
-    }
-
-    public static async Task EventuallyAsync(Action check, TimeSpan? wait = null, TimeSpan? poll = null)
-    {
-        await EventuallyAsync(() =>
-        {
-            check();
-            return Task.CompletedTask;
-        }, wait, poll);
     }
 }

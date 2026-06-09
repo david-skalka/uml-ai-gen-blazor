@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using TodoAppApi;
 using TodoAppApi.Models;
 
@@ -36,14 +35,9 @@ public class DefaultSeeder : ISeeder
 
     public void Clear(ApplicationDbContext dbContext)
     {
-        var tables = GetAll().Select(x => x.GetType()).Distinct().Reverse();
-        foreach (var table in tables)
-        {
-            var entityType = dbContext.Model.FindEntityType(table);
-
-            if (entityType != null)
-                dbContext.Database.ExecuteSqlRaw("DELETE FROM " + entityType.GetTableName());
-        }
+        dbContext.Alarms.RemoveRange(dbContext.Alarms);
+        dbContext.TodoLists.RemoveRange(dbContext.TodoLists);
+        dbContext.SaveChanges();
     }
 
     public void Seed(ApplicationDbContext dbContext)

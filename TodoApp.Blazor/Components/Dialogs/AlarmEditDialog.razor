@@ -1,5 +1,4 @@
 @using System.Globalization
-@using TodoApp.Api
 @inject IClient Api
 @inject IErrorHandlerService ErrorHandler
 
@@ -19,10 +18,10 @@
 
 @code {
     [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; } = default!;
+    private IMudDialogInstance MudDialog { get; set; } = null!;
 
     [Parameter, EditorRequired]
-    public Alarm Item { get; set; } = default!;
+    public Alarm Item { get; set; } = null!;
 
     private string AlarmTitle { get; set; } = string.Empty;
     private string Time { get; set; } = string.Empty;

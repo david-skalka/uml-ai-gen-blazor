@@ -7,9 +7,6 @@ public static class PlaywrightPageExtensions
     public static ILocator MainTableRows(this IPage page) =>
         page.Locator("table.mud-table-root").First.Locator("tbody tr");
 
-    public static ILocator TableRows(this IPage page, int tableIndex) =>
-        page.Locator("table.mud-table-root").Nth(tableIndex).Locator("tbody tr");
-
     public static ILocator ActiveDialog(this IPage page) =>
         page.GetByRole(AriaRole.Dialog);
 

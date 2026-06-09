@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace TodoApp.Api;
+namespace TodoApp.Blazor.Api;
 
 public class JHipsterResponseHandler : DelegatingHandler
 {

@@ -1,5 +1,4 @@
 using System.Net;
-using Microsoft.Extensions.Logging;
 using MudBlazor;
 using TodoApp.Api;
 using TodoApp.Blazor.Components.Dialogs;

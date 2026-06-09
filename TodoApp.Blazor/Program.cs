@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using TodoApp.Api;
 using TodoApp.Blazor;
+using TodoApp.Blazor.Api;
 using TodoApp.Blazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

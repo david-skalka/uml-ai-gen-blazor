@@ -8,12 +8,12 @@ public class E2EAssemblySetup
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await E2eTestHost.EnsureStartedAsync();
+        await E2ETestHost.EnsureStartedAsync();
     }
 
     [OneTimeTearDown]
     public async Task OneTimeTearDown()
     {
-        await E2eTestHost.DisposeAsync();
+        await E2ETestHost.DisposeAsync();
     }
 }

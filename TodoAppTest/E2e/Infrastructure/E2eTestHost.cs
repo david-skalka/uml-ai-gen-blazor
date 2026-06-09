@@ -4,23 +4,22 @@ using TodoAppApi;
 
 namespace TodoAppTest.E2e.Infrastructure;
 
-public static class E2eTestHost
+public static class E2ETestHost
 {
     public const string ApiBaseUrl = "http://127.0.0.1:18765";
     public const string BlazorBaseUrl = "http://127.0.0.1:18766";
 
-    private static E2eWebApplicationFactory<Program>? _apiFactory;
+    private static E2EWebApplicationFactory<Program>? _apiFactory;
     private static Process? _blazorProcess;
     private static string? _appsettingsBackup;
     private static string? _appsettingsPath;
     private static string? _devAppsettingsBackup;
     private static string? _devAppsettingsPath;
     private static readonly SemaphoreSlim StartLock = new(1, 1);
+    private static readonly HttpClient WaitClient = new() { Timeout = TimeSpan.FromSeconds(2) };
 
-    public static E2eWebApplicationFactory<Program> ApiFactory =>
-        _apiFactory ?? throw new InvalidOperationException("E2E host has not been started.");
-
-    public static IServiceProvider ApiServices => ApiFactory.KestrelServices;
+    public static IServiceProvider ApiServices =>
+        (_apiFactory ?? throw new InvalidOperationException("E2E host has not been started.")).KestrelServices;
 
     public static async Task EnsureStartedAsync()
     {
@@ -33,7 +32,7 @@ public static class E2eTestHost
             if (_apiFactory is not null)
                 return;
 
-            _apiFactory = new E2eWebApplicationFactory<Program>();
+            _apiFactory = new E2EWebApplicationFactory<Program>();
             _ = _apiFactory.CreateClient();
 
             await StartBlazorDevServerAsync();
@@ -106,8 +105,11 @@ public static class E2eTestHost
             _devAppsettingsBackup = null;
         }
 
-        _apiFactory?.Dispose();
-        _apiFactory = null;
+        if (_apiFactory is not null)
+        {
+            await _apiFactory.DisposeAsync();
+            _apiFactory = null;
+        }
     }
 
     private static string FindSolutionRoot()
@@ -126,14 +128,13 @@ public static class E2eTestHost
 
     private static async Task WaitForUrlAsync(string url, TimeSpan timeout)
     {
-        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
         var deadline = DateTime.UtcNow + timeout;
 
         while (DateTime.UtcNow < deadline)
         {
             try
             {
-                var response = await client.GetAsync(url);
+                var response = await WaitClient.GetAsync(url);
                 if (response.IsSuccessStatusCode)
                     return;
             }

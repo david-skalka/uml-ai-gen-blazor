@@ -1,6 +1,4 @@
 @page "/alarms"
-@using TodoApp.Api
-@using TodoApp.Blazor.Components.Dialogs
 @inject IClient Api
 @inject IDialogService DialogService
 @inject IErrorHandlerService ErrorHandler
@@ -90,7 +88,7 @@
         var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Alarm", parameters, AppDialogOptions.Small);
         var result = await dialog.Result;
 
-        if (result is { Canceled: false, Data: ConfirmResult confirm } && confirm == ConfirmResult.Delete)
+        if (result is { Canceled: false, Data: ConfirmResult.Delete })
         {
             await Api.AlarmsDeleteAsync(item.Id);
             await LoadAsync();

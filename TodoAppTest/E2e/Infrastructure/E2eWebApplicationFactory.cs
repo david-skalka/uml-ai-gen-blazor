@@ -1,18 +1,13 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TodoAppTest.Integration.Infrastructure;
 
 namespace TodoAppTest.E2e.Infrastructure;
 
-public sealed class E2eWebApplicationFactory<TProgram> : CustomWebApplicationFactory<TProgram>
+public sealed class E2EWebApplicationFactory<TProgram> : CustomWebApplicationFactory<TProgram>
     where TProgram : class
 {
     private IHost? _kestrelHost;
-
-    public string ServerAddress { get; private set; } = string.Empty;
 
     public IServiceProvider KestrelServices =>
         _kestrelHost?.Services ?? throw new InvalidOperationException("Kestrel host has not been started.");
@@ -24,15 +19,11 @@ public sealed class E2eWebApplicationFactory<TProgram> : CustomWebApplicationFac
         builder.ConfigureWebHost(webHostBuilder =>
         {
             webHostBuilder.UseKestrel();
-            webHostBuilder.UseUrls(E2eTestHost.ApiBaseUrl);
+            webHostBuilder.UseUrls(E2ETestHost.ApiBaseUrl);
         });
 
         _kestrelHost = builder.Build();
         _kestrelHost.Start();
-
-        var server = _kestrelHost.Services.GetRequiredService<IServer>();
-        ServerAddress = server.Features.Get<IServerAddressesFeature>()?.Addresses.FirstOrDefault()
-                        ?? E2eTestHost.ApiBaseUrl;
 
         return testHost;
     }

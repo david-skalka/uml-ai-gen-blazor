@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore todoapp.slnx
+
+      - name: Build
+        run: dotnet build todoapp.slnx --configuration Release --no-restore
+
+      - name: Install Playwright browsers
+        run: pwsh TodoAppTest/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Test
+        run: >-
+          dotnet test TodoAppTest/TodoAppTest.csproj
+          --configuration Release
+          --no-build
+          --verbosity normal
+          --collect:"XPlat Code Coverage"
+          --settings coverlet.runsettings
+          --results-directory TestResults
+          /p:RunSettingsFile=$(pwd)/TodoAppTest/playwright.ci.runsettings
+
+      - name: Install JetBrains InspectCode
+        run: dotnet tool install --global JetBrains.ReSharper.GlobalTools || dotnet tool update --global JetBrains.ReSharper.GlobalTools
+
+      - name: Run InspectCode
+        run: jb inspectcode --format=Text --output=inscpect_report.txt todoapp.slnx
+
+      - name: Validate InspectCode Report
+        run: |
+          if tail -n +2 inscpect_report.txt | grep -q '[^[:space:]]'; then
+            echo "InspectCode found issues:"
+            cat inscpect_report.txt
+            exit 1
+          fi
+          echo "InspectCode report is clean."
+
+      - name: Install ReportGenerator
+        run: dotnet tool install dotnet-reportgenerator-globaltool --tool-path .tools
+
+      - name: Generate coverage report
+        run: .tools/reportgenerator "-config:.netconfig"
+
+      - name: Coverage summary
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: TestResults/**/coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '60 80'
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coveragereport/
+          retention-days: 14
+
+      - name: Upload InspectCode report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: inspectcode-report
+          path: inscpect_report.txt
+          retention-days: 14
