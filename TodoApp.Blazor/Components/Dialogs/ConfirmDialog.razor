@@ -1,0 +1,55 @@
+<MudDialog>
+    <DialogContent>
+        <MudText>@Message</MudText>
+        @if (Errors.Count > 0)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-3" Dense="true">
+                <ul class="mud-alert-message">
+                    @foreach (var error in Errors)
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+            </MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        @foreach (var button in Buttons)
+        {
+            <MudButton Variant="@(button.IsPrimary ? Variant.Filled : Variant.Text)"
+                       Color="@GetButtonColor(button)"
+                       OnClick="() => CloseWithResult(button.Result)">
+                @button.Label
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+
+    [Parameter]
+    public IReadOnlyList<string> Errors { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<ConfirmButton> Buttons { get; set; } = [];
+
+    private void CloseWithResult(ConfirmResult result)
+    {
+        if (result == ConfirmResult.Cancel)
+            MudDialog.Cancel();
+        else
+            MudDialog.Close(DialogResult.Ok(result));
+    }
+
+    private static Color GetButtonColor(ConfirmButton button) => button.Result switch
+    {
+        ConfirmResult.Delete => Color.Error,
+        ConfirmResult.Ok => Color.Primary,
+        _ => Color.Default
+    };
+}

@@ -1,0 +1,138 @@
+@page "/todo-list"
+@using TodoApp.Api
+@using TodoApp.Blazor.Components.Dialogs
+@inject IClient Api
+@inject IDialogService DialogService
+@inject IErrorHandlerService ErrorHandler
+
+<MudTabs @bind-ActivePanelIndex="_activeTabIndex" Class="mb-4">
+    <MudTabPanel Text="CRUD">
+        <MudPaper Class="pa-4 mt-4" Elevation="1">
+            <MudStack Row="true" Spacing="2" Class="mb-4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NewAsync">New</MudButton>
+            </MudStack>
+
+            <MudTable Items="Items" T="TodoList" Hover="true" Striped="true" Dense="true">
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Description</MudTh>
+                    <MudTh>Archived</MudTh>
+                    <MudTh>Created</MudTh>
+                    <MudTh Style="width: 1%; white-space: nowrap;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Name">@context.Name</MudTd>
+                    <MudTd DataLabel="Description">@context.Description</MudTd>
+                    <MudTd DataLabel="Archived">@(context.IsArchived == true ? "Yes" : "No")</MudTd>
+                    <MudTd DataLabel="Created">@(context.CreatedAt?.ToString("yyyy-MM-dd HH:mm"))</MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudStack Row="true" Spacing="1">
+                            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary"
+                                       OnClick="@(() => EditAsync(context))">Edit</MudButton>
+                            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error"
+                                       OnClick="@(() => DeleteAsync(context))">Delete</MudButton>
+                        </MudStack>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Extra actions">
+        <MudPaper Class="pa-4 mt-4" Elevation="1">
+            <MudText Typo="Typo.h6" GutterBottom="true">GroupByName</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4">Extra operation from the UML model — groups todo lists by name.</MudText>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                <MudCheckBox @bind-Value="IncludeArchived" Label="Include archived" Color="Color.Primary" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GroupByNameAsync">Run</MudButton>
+            </MudStack>
+
+            <MudTable Items="GroupByNameResults" T="GroupByNameOutput" Hover="true" Striped="true" Dense="true">
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Count</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Name">@context.Name</MudTd>
+                    <MudTd DataLabel="Count">@context.Count</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private int _activeTabIndex;
+    private List<TodoList> Items { get; set; } = [];
+    private List<GroupByNameOutput> GroupByNameResults { get; set; } = [];
+    private bool IncludeArchived { get; set; }
+
+    protected override Task OnInitializedAsync() =>
+        ErrorHandler.RunSafeAsync(LoadAsync);
+
+    private async Task LoadAsync()
+    {
+        var items = await Api.TodoListsGetAllAsync();
+        Items = items.ToList();
+    }
+
+    private Task NewAsync() => ErrorHandler.RunSafeAsync(() => OpenEditDialogAsync(new TodoList
+    {
+        Id = 0,
+        Name = string.Empty,
+        Description = string.Empty
+    }));
+
+    private Task EditAsync(TodoList item) => ErrorHandler.RunSafeAsync(() => OpenEditDialogAsync(new TodoList
+    {
+        Id = item.Id,
+        Name = item.Name,
+        Description = item.Description
+    }));
+
+    private async Task OpenEditDialogAsync(TodoList item)
+    {
+        var parameters = new DialogParameters<TodoListEditDialog>
+        {
+            { x => x.Item, item }
+        };
+
+        var title = item.Id == 0 ? "New Todo List" : "Edit Todo List";
+        var dialog = await DialogService.ShowAsync<TodoListEditDialog>(title, parameters, AppDialogOptions.Small);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+            await LoadAsync();
+    }
+
+    private Task DeleteAsync(TodoList item) => ErrorHandler.RunSafeAsync(async () =>
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Message, $"Delete \"{item.Name}\"?" },
+            {
+                x => x.Buttons,
+                (IReadOnlyList<ConfirmButton>)
+                [
+                    new ConfirmButton("Cancel", ConfirmResult.Cancel),
+                    new ConfirmButton("Delete", ConfirmResult.Delete, true)
+                ]
+            }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Todo List", parameters, AppDialogOptions.Small);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: ConfirmResult confirm } && confirm == ConfirmResult.Delete)
+        {
+            await Api.TodoListsDeleteAsync(item.Id);
+            await LoadAsync();
+        }
+    });
+
+    private Task GroupByNameAsync() => ErrorHandler.RunSafeAsync(async () =>
+    {
+        var results = await Api.TodoListsGroupByNameAsync(new GroupByNameInput { IncludeArchived = IncludeArchived });
+        GroupByNameResults = results.ToList();
+    });
+}

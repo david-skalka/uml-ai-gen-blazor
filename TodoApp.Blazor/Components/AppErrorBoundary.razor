@@ -1,0 +1,12 @@
+@inherits ErrorBoundary
+@inject IErrorHandlerService ErrorHandler
+
+@ChildContent
+
+@code {
+    protected override async Task OnErrorAsync(Exception exception)
+    {
+        await ErrorHandler.HandleAsync(exception);
+        await base.OnErrorAsync(exception);
+    }
+}

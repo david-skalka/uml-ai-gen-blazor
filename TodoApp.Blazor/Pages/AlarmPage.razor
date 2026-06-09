@@ -1,0 +1,99 @@
+@page "/alarms"
+@using TodoApp.Api
+@using TodoApp.Blazor.Components.Dialogs
+@inject IClient Api
+@inject IDialogService DialogService
+@inject IErrorHandlerService ErrorHandler
+
+<MudPaper Class="pa-4 mt-4" Elevation="1">
+    <MudStack Row="true" Spacing="2" Class="mb-4">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NewAsync">New</MudButton>
+    </MudStack>
+
+    <MudTable Items="Items" T="Alarm" Hover="true" Striped="true" Dense="true">
+        <HeaderContent>
+            <MudTh>Title</MudTh>
+            <MudTh>Time</MudTh>
+            <MudTh Style="width: 1%; white-space: nowrap;">Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Title">@context.Title</MudTd>
+            <MudTd DataLabel="Time">@(context.Time?.ToString("yyyy-MM-dd HH:mm"))</MudTd>
+            <MudTd DataLabel="Actions">
+                <MudStack Row="true" Spacing="1">
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary"
+                               OnClick="@(() => EditAsync(context))">Edit</MudButton>
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error"
+                               OnClick="@(() => DeleteAsync(context))">Delete</MudButton>
+                </MudStack>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<Alarm> Items { get; set; } = [];
+
+    protected override Task OnInitializedAsync() =>
+        ErrorHandler.RunSafeAsync(LoadAsync);
+
+    private async Task LoadAsync()
+    {
+        var items = await Api.AlarmsGetAllAsync();
+        Items = items.ToList();
+    }
+
+    private Task NewAsync() => ErrorHandler.RunSafeAsync(() => OpenEditDialogAsync(new Alarm
+    {
+        Id = 0,
+        Title = string.Empty,
+        Time = DateTimeOffset.Now
+    }));
+
+    private Task EditAsync(Alarm item) => ErrorHandler.RunSafeAsync(() => OpenEditDialogAsync(new Alarm
+    {
+        Id = item.Id,
+        Title = item.Title,
+        Time = item.Time
+    }));
+
+    private async Task OpenEditDialogAsync(Alarm item)
+    {
+        var parameters = new DialogParameters<AlarmEditDialog>
+        {
+            { x => x.Item, item }
+        };
+
+        var title = item.Id == 0 ? "New Alarm" : "Edit Alarm";
+        var dialog = await DialogService.ShowAsync<AlarmEditDialog>(title, parameters, AppDialogOptions.Small);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+            await LoadAsync();
+    }
+
+    private Task DeleteAsync(Alarm item) => ErrorHandler.RunSafeAsync(async () =>
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Message, $"Delete \"{item.Title}\"?" },
+            {
+                x => x.Buttons,
+                (IReadOnlyList<ConfirmButton>)
+                [
+                    new ConfirmButton("Cancel", ConfirmResult.Cancel),
+                    new ConfirmButton("Delete", ConfirmResult.Delete, true)
+                ]
+            }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Alarm", parameters, AppDialogOptions.Small);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: ConfirmResult confirm } && confirm == ConfirmResult.Delete)
+        {
+            await Api.AlarmsDeleteAsync(item.Id);
+            await LoadAsync();
+        }
+    });
+}
