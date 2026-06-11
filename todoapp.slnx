@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="TodoApp.Blazor/TodoApp.Blazor.csproj" />
+  <Project Path="TodoApp.TestHarness/TodoApp.TestHarness.csproj" />
   <Project Path="TodoAppApi/TodoAppApi.csproj" />
   <Project Path="TodoAppTest/TodoAppTest.csproj" />
 </Solution>

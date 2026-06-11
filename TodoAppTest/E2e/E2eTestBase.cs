@@ -10,7 +10,7 @@ namespace TodoAppTest.E2e;
 [NonParallelizable]
 public abstract class E2ETestBase : PageTest
 {
-    protected string BaseUrl => E2ETestHost.BlazorBaseUrl.TrimEnd('/');
+    protected string BaseUrl => E2ETestHost.BaseUrl;
 
     [SetUp]
     public void SetUp()

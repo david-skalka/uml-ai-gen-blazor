@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-using NUnit.Framework;
 using TodoAppTest.E2e.Infrastructure;
 
 namespace TodoAppTest.E2e;

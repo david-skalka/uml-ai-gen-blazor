@@ -8,6 +8,7 @@ Blazor WASM SPA port of the [uml-ai-gen](https://github.com) Avalonia desktop ap
 |---------|------|
 | `TodoApp.Blazor` | Blazor WebAssembly client (SPA) |
 | `TodoAppApi` | ASP.NET Core REST API (SQLite) |
+| `TodoApp.TestHarness` | E2E host — WASM + API na jedné URL |
 
 ## Run locally
 
@@ -25,7 +26,7 @@ Blazor WASM SPA port of the [uml-ai-gen](https://github.com) Avalonia desktop ap
 
 3. Open http://localhost:5154
 
-API base URL is configured in `TodoApp.Blazor/wwwroot/appsettings.json` (`ApiBaseUrl`).
+API base URL: `appsettings.Development.json` (`http://localhost:5000`) pro standalone dev; prázdné `ApiBaseUrl` v `appsettings.json` použije stejný origin (test harness / hosted režim).
 
 ## Tests
 
@@ -34,7 +35,7 @@ Project `TodoAppTest` (from [uml-ai-gen](https://github.com)):
 | Type | Framework | What it covers |
 |------|-----------|----------------|
 | Integration | NUnit + `WebApplicationFactory` | API CRUD, seeders, in-memory SQLite |
-| E2E | NUnit + Playwright | Blazor UI against test API + dev server |
+| E2E | NUnit + Playwright | Blazor UI přes `TodoApp.TestHarness` (jedna URL) |
 
 ```bash
 # Integration only
@@ -45,7 +46,7 @@ pwsh TodoAppTest/bin/Debug/net10.0/playwright.ps1 install
 dotnet test TodoAppTest/TodoAppTest.csproj --filter "Category=E2e"
 ```
 
-E2E starts API on `http://127.0.0.1:18765` and Blazor on `http://127.0.0.1:18766`. Stop any running `TodoAppApi` / `TodoApp.Blazor` instances before running tests.
+E2E spouští `TodoApp.TestHarness` in-process (náhodný port na `127.0.0.1`). Není potřeba běžící `TodoAppApi` ani `TodoApp.Blazor` dev server.
 
 ### E2E (Playwright)
 

@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
 using Microsoft.Playwright;
-using NUnit.Framework;
 using TodoAppTest.E2e.Utils;
 using TodoAppTest.Integration.Seeders;
 

@@ -6,8 +6,9 @@ Deterministické UI testy pro Blazor WASM (stejné scénáře jako Avalonia E2E 
 
 | Soubor | Účel |
 |--------|------|
+| `TodoApp.TestHarness` | Jeden ASP.NET host — API + WASM statiky (same-origin) |
 | `E2eTestBase.cs` | Seeding/cleanup přes `[Property("Seeder", ...)]` |
-| `Infrastructure/E2eTestHost.cs` | API + Blazor dev server |
+| `Infrastructure/E2eTestHost.cs` | Spustí harness přes `WebApplicationFactory` (dynamický port) |
 | `Utils/PlaywrightPageExtensions.cs` | Pomocné lokátory a `GotoAppPageAsync` |
 | `TodoListE2eTests.cs`, `AlarmE2eTests.cs` | CRUD + GroupByName scénáře |
 

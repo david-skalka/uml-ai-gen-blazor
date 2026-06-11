@@ -3,6 +3,7 @@ using TodoAppApi.Migrations;
 
 namespace TodoAppApi;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class Program
 {
     public static void Main(string[] args)
@@ -37,8 +38,7 @@ public class Program
                             "http://localhost:5154",
                             "https://localhost:7286",
                             "http://localhost:5173",
-                            "https://localhost:7173",
-                            "http://127.0.0.1:18766")
+                            "https://localhost:7173")
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 }
