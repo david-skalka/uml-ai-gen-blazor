@@ -6,6 +6,11 @@ using TodoAppTest.Integration.Infrastructure;
 
 namespace TodoAppTest.E2e.Infrastructure;
 
+file static class KestrelHttp
+{
+    internal static readonly SocketsHttpHandler Handler = new();
+}
+
 public sealed class E2EWebApplicationFactory<TProgram> : CustomWebApplicationFactory<TProgram>
     where TProgram : class
 {
@@ -21,11 +26,6 @@ public sealed class E2EWebApplicationFactory<TProgram> : CustomWebApplicationFac
         var client = new HttpClient(KestrelHttp.Handler, disposeHandler: false);
         client.BaseAddress = new Uri(BaseUrl + "/");
         return client;
-    }
-
-    private static class KestrelHttp
-    {
-        internal static readonly SocketsHttpHandler Handler = new();
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
