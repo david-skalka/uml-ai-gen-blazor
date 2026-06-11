@@ -1,4 +1,6 @@
+using System.Threading.Tasks;
 using Microsoft.Playwright;
+using NUnit.Framework;
 using TodoAppTest.E2e.Utils;
 using TodoAppTest.Integration.Seeders;
 
@@ -25,7 +27,7 @@ public class AlarmE2ETests : E2ETestBase
         await dialog.GetByLabel("Time").FillAsync("2026-05-24 07:30");
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
 
-        await Page.MainTableRows().EventuallyHaveCountAsync(DefaultSeeder.Alarms.Length + 1);
+        await Expect(Page.MainTableRows()).ToHaveCountAsync(DefaultSeeder.Alarms.Length + 1);
     }
 
     [Test]
@@ -47,7 +49,7 @@ public class AlarmE2ETests : E2ETestBase
         await dialog.GetByLabel("Time").FillAsync(time);
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
 
-        await Page.MainTableRows().EventuallyHaveCountAsync(DefaultSeeder.Alarms.Length);
+        await Expect(Page.MainTableRows()).ToHaveCountAsync(DefaultSeeder.Alarms.Length);
     }
 
     [Test]
@@ -66,6 +68,6 @@ public class AlarmE2ETests : E2ETestBase
             .GetByRole(AriaRole.Button, new() { Name = "Delete" })
             .ClickAsync();
 
-        await Page.MainTableRows().EventuallyHaveCountAsync(DefaultSeeder.Alarms.Length - 1);
+        await Expect(Page.MainTableRows()).ToHaveCountAsync(DefaultSeeder.Alarms.Length - 1);
     }
 }

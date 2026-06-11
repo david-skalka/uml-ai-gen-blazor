@@ -8,7 +8,7 @@ Deterministické UI testy pro Blazor WASM (stejné scénáře jako Avalonia E2E 
 |--------|------|
 | `E2eTestBase.cs` | Seeding/cleanup přes `[Property("Seeder", ...)]` |
 | `Infrastructure/E2eTestHost.cs` | API + Blazor dev server |
-| `Utils/PlaywrightPageExtensions.cs` | Pomocné lokátory a `EventuallyHaveCountAsync` |
+| `Utils/PlaywrightPageExtensions.cs` | Pomocné lokátory a `GotoAppPageAsync` |
 | `TodoListE2eTests.cs`, `AlarmE2eTests.cs` | CRUD + GroupByName scénáře |
 
 ## Spuštění

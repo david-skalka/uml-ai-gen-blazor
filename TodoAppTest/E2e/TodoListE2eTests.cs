@@ -1,4 +1,6 @@
+using System.Threading.Tasks;
 using Microsoft.Playwright;
+using NUnit.Framework;
 using TodoAppTest.E2e.Utils;
 using TodoAppTest.Integration.Seeders;
 
@@ -25,7 +27,7 @@ public class TodoListE2ETests : E2ETestBase
         await dialog.GetByLabel("Description").FillAsync("Groceries");
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
 
-        await Page.MainTableRows().EventuallyHaveCountAsync(DefaultSeeder.TodoLists.Length + 1);
+        await Expect(Page.MainTableRows()).ToHaveCountAsync(DefaultSeeder.TodoLists.Length + 1);
     }
 
     [Test]
@@ -47,7 +49,7 @@ public class TodoListE2ETests : E2ETestBase
         await dialog.GetByLabel("Description").FillAsync(description);
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
 
-        await Page.MainTableRows().EventuallyHaveCountAsync(DefaultSeeder.TodoLists.Length);
+        await Expect(Page.MainTableRows()).ToHaveCountAsync(DefaultSeeder.TodoLists.Length);
     }
 
     [Test]
@@ -66,7 +68,7 @@ public class TodoListE2ETests : E2ETestBase
             .GetByRole(AriaRole.Button, new() { Name = "Delete" })
             .ClickAsync();
 
-        await Page.MainTableRows().EventuallyHaveCountAsync(DefaultSeeder.TodoLists.Length - 1);
+        await Expect(Page.MainTableRows()).ToHaveCountAsync(DefaultSeeder.TodoLists.Length - 1);
     }
 
     [Test]
@@ -77,6 +79,6 @@ public class TodoListE2ETests : E2ETestBase
         await Page.GetByRole(AriaRole.Tab, new() { Name = "Extra actions" }).ClickAsync();
         await Page.GetByRole(AriaRole.Button, new() { Name = "Run" }).ClickAsync();
 
-        await Page.MainTableRows().EventuallyHaveCountAsync(DefaultSeeder.TodoLists.Length);
+        await Expect(Page.MainTableRows()).ToHaveCountAsync(DefaultSeeder.TodoLists.Length);
     }
 }

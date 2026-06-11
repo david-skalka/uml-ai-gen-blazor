@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.Playwright;
 
 namespace TodoAppTest.E2e.Utils;
@@ -18,15 +19,7 @@ public static class PlaywrightPageExtensions
             Timeout = 60_000
         });
 
-        await page.MainTableRows().EventuallyHaveCountAsync(expectedRowCount);
-    }
-
-    public static async Task EventuallyHaveCountAsync(this ILocator locator, int count)
-    {
-        await EventuallyAssertions.EventuallyAsync(async () =>
-        {
-            (await locator.CountAsync()).Should().Be(count);
-        });
+        await Assertions.Expect(page.MainTableRows()).ToHaveCountAsync(expectedRowCount);
     }
 
     public static ILocator TableRowWithCell(this IPage page, string cellText) =>
